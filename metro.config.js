@@ -2,24 +2,12 @@
 const { getDefaultConfig } = require('expo/metro-config');
 const path = require('path');
 
-// Find the project and workspace directories
+// Find the project directory
 const projectRoot = __dirname;
-// This can be replaced with `find-yarn-workspace-root`
-const workspaceRoot = projectRoot;
 
 const config = getDefaultConfig(projectRoot);
 
-// 1. Watch all files within the monorepo
-config.watchFolders = [workspaceRoot];
-// 2. Let Metro know where to resolve packages and in what order
-config.resolver.nodeModulesPaths = [
-  path.resolve(projectRoot, 'node_modules'),
-  path.resolve(workspaceRoot, 'node_modules'),
-];
-// 3. Force Metro to resolve (sub)dependencies only from the `nodeModulesPaths`
-config.resolver.disableHierarchicalLookup = true;
-
-// Add support for native modules
+// Add support for native modules and assets
 config.resolver.assetExts = [...config.resolver.assetExts, 'db', 'sqlite'];
 config.transformer.getTransformOptions = async () => ({
   transform: {
@@ -27,5 +15,11 @@ config.transformer.getTransformOptions = async () => ({
     inlineRequires: true,
   },
 });
+
+// Add support for symlinks
+config.resolver.sourceExts = [...config.resolver.sourceExts, 'mjs'];
+config.resolver.extraNodeModules = {
+  '@': path.resolve(__dirname, 'src'),
+};
 
 module.exports = config;

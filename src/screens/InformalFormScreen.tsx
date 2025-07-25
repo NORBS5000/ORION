@@ -97,13 +97,13 @@ const InformalFormScreen: React.FC<InformalFormScreenProps> = ({
           
           <View style={styles.uploadGrid}>
             {[1, 2, 3, 4].map((i) => {
-              // The bug is here - we're checking for asset-1, asset-2 etc.
-              // But pickImage creates IDs like asset-1627384950123
-              // Let's modify to check if any asset exists with the 'asset' type
-              const isUploaded = formData.uploadedAssets.some(
-                asset => asset.id.startsWith('asset-') &&
-                formData.uploadedAssets.indexOf(asset) === i - 1
+              // Get all assets with 'asset-' prefix
+              const assetUploads = formData.uploadedAssets.filter(
+                asset => asset.id.startsWith('asset-')
               );
+              
+              // Consider an asset uploaded if we have at least i assets
+              const isUploaded = assetUploads.length >= i;
               
               return (
                 <TouchableOpacity

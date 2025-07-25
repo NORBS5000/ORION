@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
@@ -7,8 +7,11 @@ import {
   StyleSheet,
   Alert,
   Switch,
+  Platform,
 } from 'react-native';
 import * as DocumentPicker from 'expo-document-picker';
+import { Ionicons } from '@expo/vector-icons';
+import DateTimePicker from '@react-native-community/datetimepicker';
 import Header from '@/components/Header';
 import InputField from '@/components/InputField';
 import UploadButton from '@/components/UploadButton';
@@ -29,7 +32,11 @@ const FormalFormScreen: React.FC<FormalFormScreenProps> = ({
   onBack, 
   onSubmit 
 }) => {
-  const pickDocument = async (type: 'bank' | 'payslip' | 'illness') => {
+  const [showDatePicker, setShowDatePicker] = useState(false);
+  const [selectedDate, setSelectedDate] = useState<Date | null>(
+    formData.repaymentDate ? new Date(formData.repaymentDate) : null
+  );
+  const pickDocument = async (type: 'bank' | 'payslip' | 'illness' | 'shop') => {
     try {
       const result = await DocumentPicker.getDocumentAsync({
         type: ['application/pdf', 'image/*'],
@@ -37,6 +44,22 @@ const FormalFormScreen: React.FC<FormalFormScreenProps> = ({
       });
 
       if (!result.canceled) {
+        // Create a new uploaded file object
+        const file = result.assets[0];
+        const uploadedFile = {
+          id: `${type}-${Date.now()}`,
+          name: file.name || `${type}-document.${file.mimeType?.split('/')[1] || 'pdf'}`,
+          uri: file.uri,
+          type: file.mimeType || 'application/pdf',
+          size: file.size
+        };
+
+        // Update the form state with the new file
+        setFormData(prev => ({
+          ...prev,
+          uploadedDocuments: [...prev.uploadedDocuments, uploadedFile]
+        }));
+
         Alert.alert('Success', `${type} document uploaded successfully!`);
       }
     } catch (error) {
@@ -61,14 +84,16 @@ const FormalFormScreen: React.FC<FormalFormScreenProps> = ({
             Please upload the following documents for verification
           </Text>
           
-          <UploadButton 
-            title="Upload 6 Months Bank Statements" 
+          <UploadButton
+            title="Upload 6 Months Bank Statements"
             onPress={() => pickDocument('bank')}
+            uploaded={formData.uploadedDocuments.some(doc => doc.id.startsWith('bank-'))}
           />
           
-          <UploadButton 
-            title="Upload 6 Months Salary Payslips" 
+          <UploadButton
+            title="Upload 6 Months Salary Payslips"
             onPress={() => pickDocument('payslip')}
+            uploaded={formData.uploadedDocuments.some(doc => doc.id.startsWith('payslip-'))}
           />
         </View>
 
@@ -109,18 +134,52 @@ const FormalFormScreen: React.FC<FormalFormScreenProps> = ({
             required
           />
 
-          <InputField
-            label="Repayment Date"
-            value={formData.repaymentDate}
-            onChange={(value) => setFormData(prev => ({ ...prev, repaymentDate: value }))}
-            placeholder="Select date"
-            icon="calendar"
-            required
-          />
+          <View style={styles.inputContainer}>
+            <Text style={styles.inputLabel}>
+              Repayment Date <Text style={styles.required}>*</Text>
+            </Text>
+            <TouchableOpacity
+              style={styles.datePickerButton}
+              onPress={() => {
+                // Show date picker
+                setShowDatePicker(true);
+              }}
+            >
+              <Ionicons name="calendar" size={16} color={colors.textSecondary} />
+              <Text style={[
+                styles.datePickerText,
+                !formData.repaymentDate && styles.datePickerPlaceholder
+              ]}>
+                {formData.repaymentDate
+                  ? new Date(formData.repaymentDate).toLocaleDateString()
+                  : "Select date"}
+              </Text>
+            </TouchableOpacity>
+            
+            {showDatePicker && (
+              <DateTimePicker
+                value={selectedDate || new Date()}
+                mode="date"
+                display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+                onChange={(event, date) => {
+                  setShowDatePicker(false);
+                  if (date && event.type !== 'dismissed') {
+                    setSelectedDate(date);
+                    setFormData(prev => ({
+                      ...prev,
+                      repaymentDate: date.toISOString().split('T')[0]
+                    }));
+                  }
+                }}
+                minimumDate={new Date()}
+              />
+            )}
+          </View>
 
-          <UploadButton 
-            title="Upload Proof of Illness" 
+          <UploadButton
+            title="Upload Proof of Illness"
             onPress={() => pickDocument('illness')}
+            uploaded={formData.uploadedDocuments.some(doc => doc.id.startsWith('illness-'))}
           />
         </View>
 
@@ -160,9 +219,10 @@ const FormalFormScreen: React.FC<FormalFormScreenProps> = ({
                 icon="location"
               />
 
-              <UploadButton 
-                title="Upload Shop Picture" 
-                onPress={() => Alert.alert('Upload', 'Shop photo upload')}
+              <UploadButton
+                title="Upload Shop Picture"
+                onPress={() => pickDocument('shop')}
+                uploaded={formData.uploadedDocuments.some(doc => doc.id.startsWith('shop-'))}
               />
             </View>
           )}
@@ -285,6 +345,36 @@ const FormalFormScreen: React.FC<FormalFormScreenProps> = ({
 };
 
 const styles = StyleSheet.create({
+  inputContainer: {
+    gap: 8,
+  },
+  inputLabel: {
+    fontSize: 16,
+    fontWeight: '500',
+    color: colors.text,
+  },
+  required: {
+    color: colors.error,
+  },
+  datePickerButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: colors.background,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: colors.border,
+    paddingHorizontal: 16,
+    paddingVertical: 16,
+  },
+  datePickerText: {
+    flex: 1,
+    fontSize: 16,
+    color: colors.text,
+    marginLeft: 8,
+  },
+  datePickerPlaceholder: {
+    color: colors.textSecondary,
+  },
   container: {
     flex: 1,
     backgroundColor: colors.background,

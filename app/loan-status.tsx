@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -12,6 +12,14 @@ import Header from '@/components/Header';
 import { colors } from '@/utils/colors';
 
 export default function LoanStatusScreen() {
+  const [applicationId, setApplicationId] = useState('');
+  const [submissionDate, setSubmissionDate] = useState('');
+  
+  useEffect(() => {
+    // Generate a stable application ID and submission date on component mount
+    setApplicationId(`LN${Math.random().toString().slice(2, 8)}`);
+    setSubmissionDate(new Date().toLocaleDateString());
+  }, []);
   return (
     <View style={styles.container}>
       <Header 
@@ -33,14 +41,14 @@ export default function LoanStatusScreen() {
           <View style={styles.statusRow}>
             <Text style={styles.statusLabel}>Submission Date:</Text>
             <Text style={styles.statusValue}>
-              {new Date().toLocaleDateString()}
+              {submissionDate}
             </Text>
           </View>
           
           <View style={styles.statusRow}>
             <Text style={styles.statusLabel}>Application ID:</Text>
             <Text style={styles.statusValue}>
-              LN{Math.random().toString().slice(2, 8)}
+              {applicationId}
             </Text>
           </View>
           

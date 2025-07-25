@@ -8,13 +8,15 @@ interface HeaderProps {
   showMenu?: boolean;
   showBack?: boolean;
   onBack?: () => void;
+  onMenu?: () => void;
 }
 
-const Header: React.FC<HeaderProps> = ({ 
-  title, 
-  showMenu = false, 
-  showBack = false, 
-  onBack 
+const Header: React.FC<HeaderProps> = ({
+  title,
+  showMenu = false,
+  showBack = false,
+  onBack,
+  onMenu
 }) => (
   <View style={styles.header}>
     {showBack ? (
@@ -26,7 +28,11 @@ const Header: React.FC<HeaderProps> = ({
     )}
     <Text style={styles.headerTitle}>{title}</Text>
     {showMenu ? (
-      <TouchableOpacity style={styles.headerButton}>
+      <TouchableOpacity
+        style={styles.headerButton}
+        onPress={onMenu}
+        activeOpacity={0.7}
+      >
         <Ionicons name="menu" size={24} color={colors.text} />
       </TouchableOpacity>
     ) : (

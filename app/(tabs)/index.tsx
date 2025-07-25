@@ -15,15 +15,38 @@ import { colors } from '@/utils/colors';
 
 export default function HomeScreen() {
   const [showSectorModal, setShowSectorModal] = useState(false);
+  const [showMenuModal, setShowMenuModal] = useState(false);
 
   const handleSectorSelection = (sector: 'formal' | 'informal') => {
     setShowSectorModal(false);
     router.push(`/loan-application/${sector}`);
   };
 
+  const handleMenuOption = (option: string) => {
+    setShowMenuModal(false);
+    
+    switch (option) {
+      case 'settings':
+        Alert.alert('Settings', 'Settings feature coming soon!');
+        break;
+      case 'support':
+        Alert.alert('Help & Support', 'Support feature coming soon!');
+        break;
+      case 'about':
+        Alert.alert('About Us', 'Loan Services App v1.0.0\n\nProviding quick and reliable financial solutions.');
+        break;
+      default:
+        break;
+    }
+  };
+
   return (
     <View style={styles.container}>
-      <Header title="Loan Services" showMenu={true} />
+      <Header
+        title="Loan Services"
+        showMenu={true}
+        onMenu={() => setShowMenuModal(true)}
+      />
       
       <ScrollView contentContainerStyle={styles.scrollContent}>
         <View style={styles.welcomeSection}>
@@ -136,6 +159,54 @@ export default function HomeScreen() {
               <Text style={styles.sectorButtonSubtext}>
                 Self-employed, freelancer, or small business owner
               </Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
+
+      {/* Menu Modal */}
+      <Modal
+        visible={showMenuModal}
+        transparent={true}
+        animationType="fade"
+        onRequestClose={() => setShowMenuModal(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={[styles.modalContent, styles.menuModalContent]}>
+            <TouchableOpacity
+              style={styles.closeButton}
+              onPress={() => setShowMenuModal(false)}
+            >
+              <Ionicons name="close" size={24} color={colors.textSecondary} />
+            </TouchableOpacity>
+            
+            <Text style={styles.modalTitle}>Menu</Text>
+            
+            <TouchableOpacity
+              style={styles.menuButton}
+              onPress={() => handleMenuOption('settings')}
+              activeOpacity={0.8}
+            >
+              <Ionicons name="settings" size={24} color={colors.primary} />
+              <Text style={styles.menuButtonText}>Settings</Text>
+            </TouchableOpacity>
+            
+            <TouchableOpacity
+              style={styles.menuButton}
+              onPress={() => handleMenuOption('support')}
+              activeOpacity={0.8}
+            >
+              <Ionicons name="help-circle" size={24} color={colors.primary} />
+              <Text style={styles.menuButtonText}>Help & Support</Text>
+            </TouchableOpacity>
+            
+            <TouchableOpacity
+              style={styles.menuButton}
+              onPress={() => handleMenuOption('about')}
+              activeOpacity={0.8}
+            >
+              <Ionicons name="information-circle" size={24} color={colors.primary} />
+              <Text style={styles.menuButtonText}>About Us</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -327,5 +398,24 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: colors.textSecondary,
     textAlign: 'center',
+  },
+  menuModalContent: {
+    maxWidth: 300,
+  },
+  menuButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: colors.background,
+    borderWidth: 1,
+    borderColor: colors.border,
+    padding: 16,
+    borderRadius: 12,
+    marginBottom: 12,
+    gap: 12,
+  },
+  menuButtonText: {
+    fontSize: 16,
+    fontWeight: '500',
+    color: colors.text,
   },
 });

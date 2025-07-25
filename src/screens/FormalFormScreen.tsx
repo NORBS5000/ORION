@@ -8,19 +8,48 @@ import {
   Alert,
   Switch,
 } from 'react-native';
-import Header from '../components/Header';
-import InputField from '../components/InputField';
-import UploadButton from '../components/UploadButton';
-import ProgressBar from '../components/ProgressBar';
-import { colors } from '../utils/colors';
+import * as DocumentPicker from 'expo-document-picker';
+import Header from '@/components/Header';
+import InputField from '@/components/InputField';
+import UploadButton from '@/components/UploadButton';
+import ProgressBar from '@/components/ProgressBar';
+import { colors } from '@/utils/colors';
+import { FormData } from '@/types';
 
-const FormalFormScreen = ({ formData, setFormData, setCurrentScreen }) => {
+interface FormalFormScreenProps {
+  formData: FormData;
+  setFormData: React.Dispatch<React.SetStateAction<FormData>>;
+  onBack: () => void;
+  onSubmit: () => void;
+}
+
+const FormalFormScreen: React.FC<FormalFormScreenProps> = ({ 
+  formData, 
+  setFormData, 
+  onBack, 
+  onSubmit 
+}) => {
+  const pickDocument = async (type: 'bank' | 'payslip' | 'illness') => {
+    try {
+      const result = await DocumentPicker.getDocumentAsync({
+        type: ['application/pdf', 'image/*'],
+        copyToCacheDirectory: true,
+      });
+
+      if (!result.canceled) {
+        Alert.alert('Success', `${type} document uploaded successfully!`);
+      }
+    } catch (error) {
+      Alert.alert('Error', 'Failed to upload document');
+    }
+  };
+
   return (
     <View style={styles.container}>
       <Header 
         title="Formal Sector Loan Request" 
         showBack={true}
-        onBack={() => setCurrentScreen('home')}
+        onBack={onBack}
       />
       <ProgressBar currentStep={2} totalSteps={4} />
       
@@ -28,15 +57,18 @@ const FormalFormScreen = ({ formData, setFormData, setCurrentScreen }) => {
         {/* Document Upload Section */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Required Documents</Text>
+          <Text style={styles.sectionSubtitle}>
+            Please upload the following documents for verification
+          </Text>
           
           <UploadButton 
             title="Upload 6 Months Bank Statements" 
-            onPress={() => Alert.alert('Upload', 'Bank statements upload')}
+            onPress={() => pickDocument('bank')}
           />
           
           <UploadButton 
             title="Upload 6 Months Salary Payslips" 
-            onPress={() => Alert.alert('Upload', 'Payslips upload')}
+            onPress={() => pickDocument('payslip')}
           />
         </View>
 
@@ -88,7 +120,7 @@ const FormalFormScreen = ({ formData, setFormData, setCurrentScreen }) => {
 
           <UploadButton 
             title="Upload Proof of Illness" 
-            onPress={() => Alert.alert('Upload', 'Proof of illness document')}
+            onPress={() => pickDocument('illness')}
           />
         </View>
 
@@ -97,7 +129,7 @@ const FormalFormScreen = ({ formData, setFormData, setCurrentScreen }) => {
           <Text style={styles.sectionTitle}>Business Information</Text>
           
           <View style={styles.toggleContainer}>
-            <Text style={{ fontSize: 16, color: colors.text, flex: 1 }}>
+            <Text style={styles.businessToggleText}>
               Do you own a retail business?
             </Text>
             <Switch
@@ -111,7 +143,7 @@ const FormalFormScreen = ({ formData, setFormData, setCurrentScreen }) => {
           </View>
 
           {formData.hasRetailBusiness && (
-            <View style={{ gap: 16, marginTop: 16 }}>
+            <View style={styles.businessFields}>
               <InputField
                 label="Business Registration Number"
                 value={formData.businessRegNumber}
@@ -141,11 +173,11 @@ const FormalFormScreen = ({ formData, setFormData, setCurrentScreen }) => {
           <Text style={styles.sectionTitle}>Guarantors</Text>
           
           {/* Guarantor 1 */}
-          <View style={{ marginBottom: 24 }}>
-            <Text style={{ fontSize: 18, fontWeight: '600', color: colors.text, marginBottom: 16 }}>
+          <View style={styles.guarantorSection}>
+            <Text style={styles.guarantorTitle}>
               Guarantor 1
             </Text>
-            <View style={{ gap: 16 }}>
+            <View style={styles.guarantorFields}>
               <InputField
                 label="Full Name"
                 value={formData.guarantor1.name}
@@ -190,11 +222,11 @@ const FormalFormScreen = ({ formData, setFormData, setCurrentScreen }) => {
           </View>
 
           {/* Guarantor 2 */}
-          <View>
-            <Text style={{ fontSize: 18, fontWeight: '600', color: colors.text, marginBottom: 16 }}>
+          <View style={styles.guarantorSection}>
+            <Text style={styles.guarantorTitle}>
               Guarantor 2
             </Text>
-            <View style={{ gap: 16 }}>
+            <View style={styles.guarantorFields}>
               <InputField
                 label="Full Name"
                 value={formData.guarantor2.name}
@@ -242,7 +274,7 @@ const FormalFormScreen = ({ formData, setFormData, setCurrentScreen }) => {
         {/* Submit Button */}
         <TouchableOpacity
           style={styles.submitButton}
-          onPress={() => setCurrentScreen('pending')}
+          onPress={onSubmit}
           activeOpacity={0.8}
         >
           <Text style={styles.submitButtonText}>Submit Loan Request</Text>
@@ -276,7 +308,11 @@ const styles = StyleSheet.create({
     fontSize: 22,
     fontWeight: '600',
     color: colors.text,
-    marginBottom: 16,
+  },
+  sectionSubtitle: {
+    fontSize: 14,
+    color: colors.textSecondary,
+    marginTop: -8,
   },
   toggleContainer: {
     flexDirection: 'row',
@@ -296,6 +332,27 @@ const styles = StyleSheet.create({
   toggleSubtext: {
     fontSize: 14,
     color: colors.textSecondary,
+  },
+  businessToggleText: {
+    fontSize: 16,
+    color: colors.text,
+    flex: 1,
+  },
+  businessFields: {
+    gap: 16,
+    marginTop: 16,
+  },
+  guarantorSection: {
+    marginBottom: 24,
+  },
+  guarantorTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: colors.text,
+    marginBottom: 16,
+  },
+  guarantorFields: {
+    gap: 16,
   },
   submitButton: {
     backgroundColor: colors.primary,

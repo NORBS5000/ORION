@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
@@ -9,15 +9,18 @@ import {
   Alert,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import Header from '../components/Header';
-import { colors } from '../utils/colors';
+import { router } from 'expo-router';
+import Header from '@/components/Header';
+import { colors } from '@/utils/colors';
 
-const HomeScreen = ({ 
-  showSectorModal, 
-  setShowSectorModal, 
-  setSelectedSector, 
-  setCurrentScreen 
-}) => {
+export default function HomeScreen() {
+  const [showSectorModal, setShowSectorModal] = useState(false);
+
+  const handleSectorSelection = (sector: 'formal' | 'informal') => {
+    setShowSectorModal(false);
+    router.push(`/loan-application/${sector}`);
+  };
+
   return (
     <View style={styles.container}>
       <Header title="Loan Services" showMenu={true} />
@@ -45,7 +48,7 @@ const HomeScreen = ({
 
           <TouchableOpacity
             style={styles.secondaryButton}
-            onPress={() => Alert.alert('Pay Loan', 'Payment feature coming soon!')}
+            onPress={() => router.push('/payment')}
             activeOpacity={0.8}
           >
             <Ionicons name="card" size={24} color={colors.primary} />
@@ -68,6 +71,24 @@ const HomeScreen = ({
               <Ionicons name="checkmark-circle" size={20} color={colors.success} />
               <Text style={styles.featureText}>Competitive interest rates</Text>
             </View>
+            <View style={styles.featureItem}>
+              <Ionicons name="checkmark-circle" size={20} color={colors.success} />
+              <Text style={styles.featureText}>Secure document handling</Text>
+            </View>
+          </View>
+        </View>
+
+        <View style={styles.statsSection}>
+          <Text style={styles.sectionTitle}>Our Impact</Text>
+          <View style={styles.statsGrid}>
+            <View style={styles.statCard}>
+              <Text style={styles.statNumber}>10K+</Text>
+              <Text style={styles.statLabel}>Loans Approved</Text>
+            </View>
+            <View style={styles.statCard}>
+              <Text style={styles.statNumber}>98%</Text>
+              <Text style={styles.statLabel}>Satisfaction Rate</Text>
+            </View>
           </View>
         </View>
       </ScrollView>
@@ -82,7 +103,7 @@ const HomeScreen = ({
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
             <TouchableOpacity 
-              style={{ position: 'absolute', top: 16, right: 16, zIndex: 1 }}
+              style={styles.closeButton}
               onPress={() => setShowSectorModal(false)}
             >
               <Ionicons name="close" size={24} color={colors.textSecondary} />
@@ -90,38 +111,30 @@ const HomeScreen = ({
             
             <Text style={styles.modalTitle}>Select Your Sector</Text>
             <Text style={styles.modalSubtitle}>
-              Are you from the Formal or Informal Sector?
+              Choose the option that best describes your employment status
             </Text>
 
             <TouchableOpacity
               style={styles.sectorButton}
-              onPress={() => {
-                setSelectedSector('formal');
-                setCurrentScreen('formalForm');
-                setShowSectorModal(false);
-              }}
+              onPress={() => handleSectorSelection('formal')}
               activeOpacity={0.8}
             >
               <Ionicons name="briefcase" size={32} color={colors.primary} />
-              <Text style={styles.sectorButtonText}>Formal</Text>
+              <Text style={styles.sectorButtonText}>Formal Sector</Text>
               <Text style={styles.sectorButtonSubtext}>
-                Employed with regular salary
+                Employed with regular salary and benefits
               </Text>
             </TouchableOpacity>
 
             <TouchableOpacity
               style={styles.sectorButton}
-              onPress={() => {
-                setSelectedSector('informal');
-                setCurrentScreen('informalForm');
-                setShowSectorModal(false);
-              }}
+              onPress={() => handleSectorSelection('informal')}
               activeOpacity={0.8}
             >
               <Ionicons name="storefront" size={32} color={colors.secondary} />
-              <Text style={styles.sectorButtonText}>Informal</Text>
+              <Text style={styles.sectorButtonText}>Informal Sector</Text>
               <Text style={styles.sectorButtonSubtext}>
-                Self-employed or small business
+                Self-employed, freelancer, or small business owner
               </Text>
             </TouchableOpacity>
           </View>
@@ -129,7 +142,7 @@ const HomeScreen = ({
       </Modal>
     </View>
   );
-};
+}
 
 const styles = StyleSheet.create({
   container: {
@@ -228,6 +241,37 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: colors.textSecondary,
   },
+  statsSection: {
+    paddingHorizontal: 20,
+    paddingTop: 40,
+  },
+  statsGrid: {
+    flexDirection: 'row',
+    gap: 16,
+  },
+  statCard: {
+    flex: 1,
+    backgroundColor: colors.surface,
+    padding: 20,
+    borderRadius: 16,
+    alignItems: 'center',
+    elevation: 2,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+  },
+  statNumber: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: colors.primary,
+    marginBottom: 4,
+  },
+  statLabel: {
+    fontSize: 14,
+    color: colors.textSecondary,
+    textAlign: 'center',
+  },
   modalOverlay: {
     flex: 1,
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
@@ -241,6 +285,14 @@ const styles = StyleSheet.create({
     padding: 24,
     width: '100%',
     maxWidth: 400,
+    position: 'relative',
+  },
+  closeButton: {
+    position: 'absolute',
+    top: 16,
+    right: 16,
+    zIndex: 1,
+    padding: 8,
   },
   modalTitle: {
     fontSize: 24,
@@ -277,5 +329,3 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
 });
-
-export default HomeScreen;

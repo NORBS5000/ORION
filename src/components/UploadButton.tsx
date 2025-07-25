@@ -1,13 +1,23 @@
 import React from 'react';
 import { TouchableOpacity, Text, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { colors } from '../utils/colors';
+import { colors } from '@/utils/colors';
 
-const UploadButton = ({ title, onPress, uploaded = false }) => (
+interface UploadButtonProps {
+  title: string;
+  onPress: () => void;
+  uploaded?: boolean;
+}
+
+const UploadButton: React.FC<UploadButtonProps> = ({ 
+  title, 
+  onPress, 
+  uploaded = false 
+}) => (
   <TouchableOpacity 
     style={[
       styles.uploadButton,
-      uploaded && { borderColor: colors.success, backgroundColor: `${colors.success}10` }
+      uploaded && styles.uploadedButton
     ]}
     onPress={onPress}
   >
@@ -18,7 +28,7 @@ const UploadButton = ({ title, onPress, uploaded = false }) => (
     />
     <Text style={[
       styles.uploadButtonText,
-      uploaded && { color: colors.success }
+      uploaded && styles.uploadedText
     ]}>
       {uploaded ? 'Uploaded ✓' : title}
     </Text>
@@ -36,9 +46,16 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 8,
   },
+  uploadedButton: {
+    borderColor: colors.success,
+    backgroundColor: `${colors.success}10`,
+  },
   uploadButtonText: {
     fontSize: 14,
     color: colors.text,
+  },
+  uploadedText: {
+    color: colors.success,
   },
 });
 

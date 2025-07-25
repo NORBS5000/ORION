@@ -11,4 +11,4 @@ export const colors = {
   textSecondary: '#6B7280',
   border: '#E5E7EB',
   accent: '#3B82F6',
-};
+} as const;

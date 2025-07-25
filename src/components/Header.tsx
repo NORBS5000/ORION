@@ -1,9 +1,21 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { colors } from '../utils/colors';
+import { colors } from '@/utils/colors';
 
-const Header = ({ title, showMenu = false, showBack = false, onBack }) => (
+interface HeaderProps {
+  title: string;
+  showMenu?: boolean;
+  showBack?: boolean;
+  onBack?: () => void;
+}
+
+const Header: React.FC<HeaderProps> = ({ 
+  title, 
+  showMenu = false, 
+  showBack = false, 
+  onBack 
+}) => (
   <View style={styles.header}>
     {showBack ? (
       <TouchableOpacity style={styles.headerButton} onPress={onBack}>

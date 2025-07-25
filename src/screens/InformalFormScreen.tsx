@@ -10,21 +10,48 @@ import {
   Dimensions,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import Header from '../components/Header';
-import InputField from '../components/InputField';
-import UploadButton from '../components/UploadButton';
-import ProgressBar from '../components/ProgressBar';
-import { colors } from '../utils/colors';
+import * as ImagePicker from 'expo-image-picker';
+import Header from '@/components/Header';
+import InputField from '@/components/InputField';
+import UploadButton from '@/components/UploadButton';
+import ProgressBar from '@/components/ProgressBar';
+import { colors } from '@/utils/colors';
+import { FormData } from '@/types';
 
 const { width } = Dimensions.get('window');
 
-const InformalFormScreen = ({ formData, setFormData, setCurrentScreen }) => {
+interface InformalFormScreenProps {
+  formData: FormData;
+  setFormData: React.Dispatch<React.SetStateAction<FormData>>;
+  onBack: () => void;
+  onSubmit: () => void;
+}
+
+const InformalFormScreen: React.FC<InformalFormScreenProps> = ({ 
+  formData, 
+  setFormData, 
+  onBack, 
+  onSubmit 
+}) => {
+  const pickImage = async (type: 'asset' | 'home' | 'shop') => {
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      aspect: [4, 3],
+      quality: 1,
+    });
+
+    if (!result.canceled) {
+      Alert.alert('Success', `${type} photo uploaded successfully!`);
+    }
+  };
+
   return (
     <View style={styles.container}>
       <Header 
         title="Informal Sector Loan Request" 
         showBack={true}
-        onBack={() => setCurrentScreen('home')}
+        onBack={onBack}
       />
       <ProgressBar currentStep={1} totalSteps={4} />
       
@@ -32,7 +59,7 @@ const InformalFormScreen = ({ formData, setFormData, setCurrentScreen }) => {
         {/* Asset Upload Section */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Upload Asset Photos</Text>
-          <Text style={{ fontSize: 14, color: colors.textSecondary, marginBottom: 8 }}>
+          <Text style={styles.sectionSubtitle}>
             Upload 3-10 pictures of your most valuable assets
           </Text>
           
@@ -41,10 +68,10 @@ const InformalFormScreen = ({ formData, setFormData, setCurrentScreen }) => {
               <TouchableOpacity 
                 key={i} 
                 style={styles.assetUploadBox}
-                onPress={() => Alert.alert('Upload Asset', `Upload asset ${i} photo`)}
+                onPress={() => pickImage('asset')}
               >
                 <Ionicons name="camera" size={24} color={colors.textSecondary} />
-                <Text style={{ fontSize: 14, color: colors.textSecondary }}>
+                <Text style={styles.uploadBoxText}>
                   Asset {i}
                 </Text>
               </TouchableOpacity>
@@ -53,7 +80,7 @@ const InformalFormScreen = ({ formData, setFormData, setCurrentScreen }) => {
           
           <UploadButton 
             title="Upload Home Floor Photo" 
-            onPress={() => Alert.alert('Upload', 'Home floor photo upload')}
+            onPress={() => pickImage('home')}
           />
         </View>
 
@@ -114,7 +141,7 @@ const InformalFormScreen = ({ formData, setFormData, setCurrentScreen }) => {
           <Text style={styles.sectionTitle}>Business Information</Text>
           
           <View style={styles.toggleContainer}>
-            <Text style={{ fontSize: 16, color: colors.text, flex: 1 }}>
+            <Text style={styles.businessToggleText}>
               Do you own a retail business?
             </Text>
             <Switch
@@ -128,7 +155,7 @@ const InformalFormScreen = ({ formData, setFormData, setCurrentScreen }) => {
           </View>
 
           {formData.hasRetailBusiness && (
-            <View style={{ gap: 16, marginTop: 16 }}>
+            <View style={styles.businessFields}>
               <InputField
                 label="Business Registration Number"
                 value={formData.businessRegNumber}
@@ -147,7 +174,7 @@ const InformalFormScreen = ({ formData, setFormData, setCurrentScreen }) => {
 
               <UploadButton 
                 title="Upload Shop Picture" 
-                onPress={() => Alert.alert('Upload', 'Shop photo upload')}
+                onPress={() => pickImage('shop')}
               />
             </View>
           )}
@@ -158,11 +185,11 @@ const InformalFormScreen = ({ formData, setFormData, setCurrentScreen }) => {
           <Text style={styles.sectionTitle}>Guarantors</Text>
           
           {/* Guarantor 1 */}
-          <View style={{ marginBottom: 24 }}>
-            <Text style={{ fontSize: 18, fontWeight: '600', color: colors.text, marginBottom: 16 }}>
+          <View style={styles.guarantorSection}>
+            <Text style={styles.guarantorTitle}>
               Guarantor 1
             </Text>
-            <View style={{ gap: 16 }}>
+            <View style={styles.guarantorFields}>
               <InputField
                 label="Full Name"
                 value={formData.guarantor1.name}
@@ -207,11 +234,11 @@ const InformalFormScreen = ({ formData, setFormData, setCurrentScreen }) => {
           </View>
 
           {/* Guarantor 2 */}
-          <View>
-            <Text style={{ fontSize: 18, fontWeight: '600', color: colors.text, marginBottom: 16 }}>
+          <View style={styles.guarantorSection}>
+            <Text style={styles.guarantorTitle}>
               Guarantor 2
             </Text>
-            <View style={{ gap: 16 }}>
+            <View style={styles.guarantorFields}>
               <InputField
                 label="Full Name"
                 value={formData.guarantor2.name}
@@ -259,7 +286,7 @@ const InformalFormScreen = ({ formData, setFormData, setCurrentScreen }) => {
         {/* Submit Button */}
         <TouchableOpacity
           style={styles.submitButton}
-          onPress={() => setCurrentScreen('pending')}
+          onPress={onSubmit}
           activeOpacity={0.8}
         >
           <Text style={styles.submitButtonText}>Submit Loan Request</Text>
@@ -293,7 +320,11 @@ const styles = StyleSheet.create({
     fontSize: 22,
     fontWeight: '600',
     color: colors.text,
-    marginBottom: 16,
+  },
+  sectionSubtitle: {
+    fontSize: 14,
+    color: colors.textSecondary,
+    marginTop: -8,
   },
   uploadGrid: {
     flexDirection: 'row',
@@ -313,6 +344,10 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     gap: 8,
   },
+  uploadBoxText: {
+    fontSize: 14,
+    color: colors.textSecondary,
+  },
   toggleContainer: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -331,6 +366,27 @@ const styles = StyleSheet.create({
   toggleSubtext: {
     fontSize: 14,
     color: colors.textSecondary,
+  },
+  businessToggleText: {
+    fontSize: 16,
+    color: colors.text,
+    flex: 1,
+  },
+  businessFields: {
+    gap: 16,
+    marginTop: 16,
+  },
+  guarantorSection: {
+    marginBottom: 24,
+  },
+  guarantorTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: colors.text,
+    marginBottom: 16,
+  },
+  guarantorFields: {
+    gap: 16,
   },
   submitButton: {
     backgroundColor: colors.primary,

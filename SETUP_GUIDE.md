@@ -71,7 +71,41 @@ rm -rf node_modules
 npm install
 ```
 
-### 5. Clear Watchman Cache (if using Watchman)
+### 5. Fix Metro Bundler Issues
+
+If you encounter the error `Cannot find module 'metro/src/ModuleGraph/worker/importLocationsPlugin'`, try these steps:
+
+```bash
+# Run the clean script to reinstall dependencies
+npm run clean
+
+# If that doesn't work, try manually fixing Metro dependencies
+npm install --save-dev @expo/metro-config@0.20.0
+npm install --save-dev metro@0.76.0 metro-resolver@0.76.0
+
+# Then clear cache and restart
+npx expo start -c
+```
+
+### 6. Update Package Dependencies
+
+If you see warnings about package version mismatches, update your dependencies to match the expected versions:
+
+```bash
+# Update core packages
+npm install @expo/vector-icons@14.1.0 @react-native-async-storage/async-storage@2.1.2 expo-document-picker@13.1.6 expo-image-picker@16.1.4 expo-status-bar@2.2.3 react@19.0.0 react-native@0.79.5
+
+# Update navigation packages
+npm install react-native-gesture-handler@2.24.0 react-native-safe-area-context@5.4.0 react-native-screens@4.11.1
+
+# Update dev dependencies
+npm install --save-dev @expo/metro-config@0.20.0
+
+# Clear cache and restart
+npx expo start -c
+```
+
+### 6. Clear Watchman Cache (if using Watchman)
 
 ```bash
 watchman watch-del-all
